@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1f35">
+<title>Coordinador · Emporium</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0f1f35;--navy-mid:#1a3050;--accent:#2dd4bf;--accent-dim:rgba(45,212,191,.15);--green:#22c55e;--green-bg:rgba(34,197,94,.12);--amber:#f59e0b;--amber-bg:rgba(245,158,11,.12);--red:#ef4444;--red-bg:rgba(239,68,68,.12);--blue:#3b82f6;--blue-bg:rgba(59,130,246,.12);--purple:#a855f7;--purple-bg:rgba(168,85,247,.12);--text:#e2e8f0;--text-dim:#94a3b8;--text-muted:#64748b;--surface:#1a2d47;--surface2:#162540;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.05);--r:12px;--rs:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);overscroll-behavior:none;}
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#0f1f35,#162540,#0f1f35);}
+.logo{width:72px;height:72px;background:var(--accent-dim);border:1.5px solid var(--accent);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;}
+.l-card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:320px;}
+.l-lbl{font-size:11px;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.l-inp{width:100%;background:var(--navy-mid);border:0.5px solid var(--border);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-size:15px;font-family:'Inter',sans-serif;outline:none;}
+.l-inp:focus{border-color:var(--accent);}
+.l-btn{width:100%;margin-top:16px;background:var(--accent);border:none;border-radius:var(--rs);padding:13px;color:var(--navy);font-size:14px;font-weight:600;cursor:pointer;}
+#app{display:none;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;}
+.app-hdr{background:var(--navy-mid);border-bottom:0.5px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.app-content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.app-nav{background:var(--navy-mid);border-top:0.5px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);flex-shrink:0;}
+.nav-item{padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--text-muted);position:relative;}
+.nav-item.on{color:var(--accent);}
+.nav-item.on::after{content:'';position:absolute;top:0;left:15%;right:15%;height:2px;background:var(--accent);border-radius:0 0 2px 2px;}
+.nav-icon{font-size:16px;}
+.nav-lbl{font-size:8px;font-weight:500;font-family:'JetBrains Mono',monospace;}
+.notif-dot{position:absolute;top:5px;right:calc(50% - 14px);width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid var(--navy-mid);}
+.panel{display:none;}
+.panel.on{display:flex;flex-direction:column;gap:10px;}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.card-hdr{padding:9px 13px;border-bottom:0.5px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:11px;font-weight:500;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;}
+.card-body{padding:10px 13px;}
+.sec{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.badge{font-size:9px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;}
+.bg{background:var(--green-bg);color:var(--green);}
+.ba{background:var(--amber-bg);color:var(--amber);}
+.br{background:var(--red-bg);color:var(--red);}
+.bb{background:var(--blue-bg);color:var(--blue);}
+.bv{background:var(--purple-bg);color:var(--purple);}
+.bgr{background:var(--border);color:var(--text-dim);}
+.row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border2);}
+.row:last-child{border-bottom:none;}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.pname{font-size:12px;font-weight:500;color:var(--text);}
+.psub{font-size:10px;color:var(--text-muted);margin-top:2px;display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+.vcode{font-size:12px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;width:62px;flex-shrink:0;}
+.sel{background:var(--navy-mid);border:0.5px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:11px;outline:none;}
+.sel:focus{border-color:var(--accent);}
+.inp{background:var(--navy-mid);border:0.5px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;width:100%;font-family:'Inter',sans-serif;}
+.inp:focus{border-color:var(--accent);}
+.hora{background:var(--navy-mid);border:0.5px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--text);font-size:11px;font-family:'JetBrains Mono',monospace;outline:none;width:76px;text-align:center;}
+.hora:focus{border-color:var(--accent);}
+.textarea{width:100%;background:var(--navy-mid);border:0.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:none;}
+.textarea:focus{border-color:var(--accent);}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.kpi{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+.kv{font-size:22px;font-weight:700;color:#fff;font-family:'JetBrains Mono',monospace;}
+.kl{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.btn-p{width:100%;background:var(--accent);border:none;border-radius:var(--rs);padding:12px;color:var(--navy);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-s{width:100%;background:transparent;border:0.5px solid var(--border);border-radius:var(--rs);padding:11px;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;}
+.btn-2{display:flex;gap:8px;}
+.btn-wa{background:#25d366;border:none;border-radius:var(--rs);padding:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;}
+.btn-call{background:var(--blue);border:none;border-radius:var(--rs);padding:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;}
+.btn-add{background:var(--accent-dim);border:0.5px dashed var(--accent);border-radius:var(--rs);padding:8px;width:100%;color:var(--accent);font-size:11px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-sm-g{padding:5px 10px;border-radius:6px;border:0.5px solid var(--green);background:var(--green-bg);color:var(--green);font-size:10px;cursor:pointer;}
+.btn-sm-b{padding:5px 10px;border-radius:6px;border:0.5px solid var(--blue);background:var(--blue-bg);color:var(--blue);font-size:10px;cursor:pointer;}
+.remove-btn{background:var(--red-bg);border:0.5px solid var(--red);border-radius:6px;padding:3px 8px;color:var(--red);font-size:10px;cursor:pointer;}
+.extra-badge{background:rgba(245,158,11,.2);color:var(--amber);font-size:9px;font-weight:500;padding:1px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;}
+.logout-btn{background:transparent;border:0.5px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text-muted);font-size:10px;cursor:pointer;}
+.hdr-badge{font-size:10px;font-weight:500;padding:3px 10px;border-radius:99px;}
+.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e3a5f;border:0.5px solid var(--accent);border-radius:var(--rs);padding:10px 18px;font-size:12px;color:var(--accent);opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.guardia-banner{background:linear-gradient(135deg,rgba(45,212,191,.12),rgba(59,130,246,.08));border:1px solid var(--accent);border-radius:var(--r);padding:12px 14px;}
+.novedad-block{background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:var(--rs);padding:8px 10px;margin-top:6px;}
+.foto-btn{background:var(--navy-mid);border:0.5px dashed var(--border);border-radius:var(--rs);padding:8px;width:100%;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--text-muted);font-size:11px;cursor:pointer;margin-top:6px;}
+.foto-preview{width:72px;height:72px;object-fit:cover;border-radius:6px;border:0.5px solid var(--border);margin:4px 4px 0 0;}
+/* DISCORD */
+.discord-msg{padding:8px 0;border-bottom:0.5px solid var(--border2);}
+.discord-msg:last-child{border-bottom:none;}
+.discord-msg-header{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.discord-msg-author{font-size:11px;font-weight:600;color:var(--accent);}
+.discord-msg-time{font-size:10px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;}
+.discord-msg-content{font-size:12px;color:var(--text);line-height:1.5;}
+.discord-img{width:80px;height:80px;object-fit:cover;border-radius:6px;border:0.5px solid var(--border);margin:4px 4px 0 0;cursor:pointer;}
+.discord-imgs{display:flex;flex-wrap:wrap;margin-top:4px;}
+.channel-tab{padding:6px 12px;border-radius:99px;border:0.5px solid var(--border);background:transparent;color:var(--text-muted);font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;}
+.channel-tab.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.channel-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.channel-tabs::-webkit-scrollbar{display:none;}
+.loading-spin{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* TASK */
+.task-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;}
+.task-card.urgente{border-left:3px solid var(--red);}
+.task-card.pendiente{border-left:3px solid var(--amber);}
+.task-card.completada{border-left:3px solid var(--green);opacity:.7;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="logo">🚛</div>
+  <div style="font-size:22px;font-weight:700;color:#fff;text-align:center;margin-bottom:4px;">Coordinador</div>
+  <div style="font-size:13px;color:var(--text-dim);text-align:center;margin-bottom:28px;">Transporte Emporium</div>
+  <div class="l-card">
+    <div class="l-lbl">Usuario</div>
+    <input class="l-inp" id="l-user" type="text" placeholder="jackson" autocomplete="username"/>
+    <div class="l-lbl" style="margin-top:14px;">Contraseña</div>
+    <input class="l-inp" id="l-pass" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="l-btn" onclick="doLogin()">Entrar →</button>
+    <div style="color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;" id="l-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-hdr">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:#fff;">Coordinador · Jackson H.</div>
+      <div style="font-size:10px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;" id="hdr-date"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="hdr-badge bg" id="hdr-status">Jornada activa</span>
+      <button class="logout-btn" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="app-content" id="app-content">
+
+    <!-- PANEL PERSONAL -->
+    <div class="panel on" id="panel-personal">
+      <div class="sec">👷 Choferes</div>
+      <div class="card"><div class="card-body" id="choferes-list"></div></div>
+      <div class="sec">🧑‍🔧 Ayudantes</div>
+      <div class="card"><div class="card-body" id="ayudantes-list"></div></div>
+      <div class="btn-2">
+        <a class="btn-call" id="btn-call" href="#">📞 Llamar a José</a>
+        <a class="btn-wa" id="btn-wa" href="#" target="_blank">💬 WhatsApp</a>
+      </div>
+    </div>
+
+    <!-- PANEL DISCORD -->
+    <div class="panel" id="panel-discord">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div class="sec" style="margin-bottom:0;">📡 Actividad en Discord hoy</div>
+        <button class="btn-sm-b" onclick="loadDiscord(currentChannel)" id="discord-refresh-btn">Actualizar</button>
+      </div>
+      <div class="channel-tabs" id="channel-tabs"></div>
+      <div class="card">
+        <div class="card-body" id="discord-content">
+          <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">Selecciona un canal para ver los mensajes del día</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL JORNADA -->
+    <div class="panel" id="panel-jornada">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kv" id="kpi-v">—</div><div class="kl">Viajes hoy</div></div>
+        <div class="kpi"><div class="kv" id="kpi-e">—</div><div class="kl">Entregas</div></div>
+        <div class="kpi"><div class="kv" id="kpi-t">—</div><div class="kl">Traslados</div></div>
+        <div class="kpi"><div class="kv" id="kpi-u" style="color:var(--green)">5/5</div><div class="kl">Sin novedad</div></div>
+      </div>
+
+      <div class="sec">🌅 Revisión matutina</div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Unidades al salir</span><span class="badge ba" id="turno-badge">Mañana</span></div>
+        <div class="card-body" id="unidades-manana"></div>
+      </div>
+
+      <div class="sec">🌆 Revisión vespertina</div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Unidades al guardar</span></div>
+        <div class="card-body" id="unidades-tarde"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Nota del coordinador</span></div>
+        <div class="card-body">
+          <textarea class="textarea" id="nota-coord" rows="3" placeholder="Logística del día, pendientes, observaciones..."></textarea>
+        </div>
+      </div>
+      <button class="btn-p" onclick="generarReporte()">📄 Generar reporte del día</button>
+    </div>
+
+    <!-- PANEL FIN SEMANA -->
+    <div class="panel" id="panel-finsemana">
+      <div id="guardia-banner-wrap"></div>
+      <div class="sec">Configurar guardia</div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Personal de guardia</span><button class="btn-sm-b" onclick="addGuardiaSlot()">+ Agregar</button></div>
+        <div class="card-body">
+          <div id="guardia-slots"></div>
+          <div style="margin-top:8px;">
+            <div class="sec" style="margin-bottom:4px;">Inicio guardia</div>
+            <input class="hora" id="fs-inicio" type="time"/>
+          </div>
+        </div>
+      </div>
+      <div class="sec">Personal libre</div>
+      <div class="card"><div class="card-body" id="fs-libres"></div></div>
+      <div class="card">
+        <div class="card-hdr"><span class="card-title">Actividad de guardia</span></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+          <textarea class="textarea" id="fs-hecho" rows="2" placeholder="Qué se hizo..."></textarea>
+          <textarea class="textarea" id="fs-falto" rows="2" placeholder="Qué faltó o quedó pendiente..."></textarea>
+        </div>
+      </div>
+      <div class="sec">Retiro del personal</div>
+      <div class="card"><div class="card-body" id="fs-retiro"></div></div>
+      <button class="btn-p" onclick="enviarGuardia()">📤 Enviar reporte de guardia</button>
+    </div>
+
+    <!-- PANEL TAREAS -->
+    <div class="panel" id="panel-tareas">
+      <div id="tareas-list"></div>
+      <div class="btn-2" style="margin-top:4px;">
+        <a class="btn-call" id="btn-call2" href="#">📞 Llamar a José</a>
+        <a class="btn-wa" id="btn-wa2" href="#" target="_blank">💬 WhatsApp</a>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="app-nav">
+    <button class="nav-item on" onclick="showPanel('personal',this)"><span class="nav-icon">👥</span><span class="nav-lbl">Personal</span></button>
+    <button class="nav-item" onclick="showPanel('discord',this)"><span class="nav-icon">📡</span><span class="nav-lbl">Discord</span></button>
+    <button class="nav-item" onclick="showPanel('jornada',this)"><span class="nav-icon">📋</span><span class="nav-lbl">Jornada</span></button>
+    <button class="nav-item" onclick="showPanel('finsemana',this)"><span class="nav-icon">🗓️</span><span class="nav-lbl">Fin Sem.</span></button>
+    <button class="nav-item" id="nav-tareas" onclick="showPanel('tareas',this)"><span class="nav-icon">✅</span><span class="nav-lbl">Tareas</span></button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────
+const SB_URL = 'https://sieadibkcqnvbwlwlmds.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZWFkaWJrY3FudmJ3bHdsbWRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDAwMDgsImV4cCI6MjA5NDE3NjAwOH0.ce9c28wht4rR7YtBdh0BFVMhTv-9CfbsuZDNPX6lBZY';
+const DISCORD_TOKEN = 'MTI5Nzk1Mzc1NzcyNzk0ODk1MQ.GpCw3V.KQZraVywcmuZju5M5BRlbsD-XtvnrreG4aaE7I';
+const JOSE_PHONE = '+584123932778'; // José Marín
+const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1503748822390800395/KsRJQp4nVU5MTsjtU4gbERs6wbBHwX9dzCSuInRo9HUdeb1VyfvIiZ-ltyBK6a2sCVnM';
+const CREDS = { jackson: 'emporium2026' };
+
+const CHANNELS = [
+  { name:'npr-04-darwin',  id:'1297957102869811230', chofer:'Darwin Serrano',     unidad:'NPR 04' },
+  { name:'npr-01-daniel',  id:'1297957215109513326', chofer:'Daniel Subero',      unidad:'NPR 01' },
+  { name:'npr-02-richard', id:'1297957265520726077', chofer:'Richard Hernández',  unidad:'NPR 02' },
+  { name:'fuso-03-wilmer', id:'1297957372228145216', chofer:'Willmer Fernández',  unidad:'FUSO 03' },
+  { name:'panel-05-l300',  id:'1313463257381736498', chofer:'Darwin/José',        unidad:'L300 05' },
+];
+
+const CHOFERES = [
+  { id:'c1', nombre:'Daniel Subero',     unidad:'NPR 01', color:'#2dd4bf' },
+  { id:'c2', nombre:'Jackson H.',        unidad:'NPR 02', color:'#3b82f6' },
+  { id:'c3', nombre:'Willmer Fernández', unidad:'FUSO 03',color:'#f59e0b' },
+  { id:'c4', nombre:'Richard Hernández', unidad:'NPR 04', color:'#a855f7' },
+  { id:'c5', nombre:'Darwin Serrano',    unidad:'L300 05',color:'#22c55e' },
+];
+const AYUDANTES = [
+  { id:'a1', nombre:'Luis Ramírez',     color:'#2dd4bf' },
+  { id:'a2', nombre:'José Pacheco',     color:'#f59e0b' },
+  { id:'a3', nombre:'Oswaldo González', color:'#a855f7' },
+];
+const TODO_PERSONAL = [...CHOFERES, ...AYUDANTES];
+const UNIDADES = ['NPR 01','NPR 02','FUSO 03','NPR 04','L300 05'];
+const GASOIL_OPTS = ['Vacío','1/4','1/2','3/4','Lleno'];
+
+let S = { personal:{}, unidades_m:{}, unidades_t:{}, fotos_m:{}, fotos_t:{}, guardia:[], tareas:[], trips:[] };
+let currentChannel = null;
+let discordCache = {};
+
+function hoy(){ return new Date().toISOString().slice(0,10); }
+function save(){ localStorage.setItem('jk_'+hoy(), JSON.stringify(S)); }
+function load(){ const d=localStorage.getItem('jk_'+hoy()); if(d) try{ S={...S,...JSON.parse(d)}; }catch(e){} if(!S.guardia) S.guardia=[]; }
+
+// ── AUTH ───────────────────────────────────────────────────
+function doLogin(){
+  const u=document.getElementById('l-user').value.trim().toLowerCase();
+  const p=document.getElementById('l-pass').value;
+  if(CREDS[u]&&CREDS[u]===p){ localStorage.setItem('jk_auth',u); document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='flex'; initApp(); }
+  else document.getElementById('l-err').textContent='Usuario o contraseña incorrectos';
+}
+function doLogout(){ localStorage.removeItem('jk_auth'); location.reload(); }
+function checkAuth(){ if(localStorage.getItem('jk_auth')){ document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='flex'; initApp(); } }
+
+// ── INIT ───────────────────────────────────────────────────
+function initApp(){
+  load(); updateHeader(); setInterval(updateHeader,60000);
+  updateContacts(); renderPersonal(); renderUnidades();
+  renderGuardia(); renderGuardiaBanner(); renderFsLibres(); renderFsRetiro();
+  renderChannelTabs(); loadTrips(); loadTareas();
+  setInterval(loadTrips,60000); setInterval(loadTareas,30000);
+}
+
+function updateHeader(){
+  const now=new Date();
+  const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('hdr-date').textContent=`${dias[now.getDay()]} ${now.getDate()} ${meses[now.getMonth()]} · ${now.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'})}`;
+  const fds=now.getDay()===0||now.getDay()===6;
+  const b=document.getElementById('hdr-status'); b.textContent=fds?'Guardia':'Jornada activa'; b.className='hdr-badge '+(fds?'ba':'bg');
+}
+
+function updateContacts(){
+  const tel=`tel:${JOSE_PHONE}`, wa=`https://wa.me/${JOSE_PHONE.replace(/\D/g,'')}`;
+  ['btn-call','btn-call2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.href=tel; });
+  ['btn-wa','btn-wa2'].forEach(id=>{ const e=document.getElementById(id); if(e) e.href=wa; });
+}
+
+function showPanel(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('on'));
+  document.getElementById('panel-'+name).classList.add('on');
+  btn.classList.add('on');
+  document.getElementById('app-content').scrollTop=0;
+}
+
+// ── PERSONAL ───────────────────────────────────────────────
+function ps(id){ return S.personal[id]||{entrada:'',salida:'',vacaciones:false}; }
+function setPF(id,field,val){ if(!S.personal[id]) S.personal[id]={}; S.personal[id][field]=val; save(); renderPersonal(); }
+
+function renderPersonal(){
+  renderPList('choferes-list',CHOFERES);
+  renderPList('ayudantes-list',AYUDANTES);
+  renderFsSelects();
+}
+
+function renderPList(cid,people){
+  document.getElementById(cid).innerHTML=people.map(p=>{
+    const d=ps(p.id);
+    const esExtra=d.salida&&parseInt(d.salida.split(':')[0])>=17;
+    const esTard=d.entrada&&parseInt(d.entrada.split(':')[0])>7;
+    let bc='bg',bt='Activo';
+    if(d.vacaciones){bc='bv';bt='Vacaciones';}
+    else if(esTard&&d.entrada){bc='ba';bt='Tardanza';}
+    return `<div class="row">
+      <div class="avatar" style="background:${p.color}22;color:${p.color};">${p.nombre.charAt(0)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="pname">${p.nombre}${p.unidad?` <span style="font-size:10px;color:var(--accent);font-family:monospace;">${p.unidad}</span>`:''}</div>
+        <div class="psub">
+          ${!d.vacaciones?`<input class="hora" type="time" value="${d.entrada}" title="Entrada" onchange="setPF('${p.id}','entrada',this.value)"/>
+          <input class="hora" type="time" value="${d.salida}" title="Salida" onchange="setPF('${p.id}','salida',this.value)"/>
+          ${esExtra?`<span class="extra-badge">+horas</span>`:''}`:`<span style="font-size:10px;color:var(--purple);">De vacaciones</span>`}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="badge ${bc}">${bt}</span>
+        <label style="cursor:pointer;display:flex;align-items:center;gap:3px;">
+          <input type="checkbox" ${d.vacaciones?'checked':''} onchange="setPF('${p.id}','vacaciones',this.checked)" style="accent-color:var(--purple);"/>
+          <span style="font-size:9px;color:var(--text-muted);">Vac.</span>
+        </label>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DISCORD ────────────────────────────────────────────────
+function renderChannelTabs(){
+  document.getElementById('channel-tabs').innerHTML = CHANNELS.map(ch=>
+    `<button class="channel-tab" onclick="loadDiscord('${ch.id}',this)">${ch.unidad}</button>`
+  ).join('');
+}
+
+async function loadDiscord(channelId, tabEl){
+  if(!channelId) return;
+  currentChannel = channelId;
+  // update tab highlight
+  document.querySelectorAll('.channel-tab').forEach(t=>t.classList.remove('on'));
+  if(tabEl) tabEl.classList.add('on');
+
+  const el = document.getElementById('discord-content');
+  el.innerHTML = `<div style="text-align:center;padding:20px;"><div class="loading-spin"></div><div style="font-size:11px;color:var(--text-muted);margin-top:8px;">Cargando mensajes...</div></div>`;
+
+  // Filtrar solo mensajes de hoy
+  const todayStr = new Date().toLocaleDateString('es-VE');
+  const todayISO = hoy();
+
+  try {
+    // Obtener hasta 100 mensajes
+    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages?limit=100`, {
+      headers: { 'Authorization': DISCORD_TOKEN }
+    });
+    if(!res.ok){ el.innerHTML=`<div style="padding:16px;color:var(--red);font-size:12px;">Error al leer Discord (${res.status}). Puede que el token haya expirado.</div>`; return; }
+    const msgs = await res.json();
+
+    // Filtrar mensajes de hoy
+    const todayMsgs = msgs.filter(m => {
+      const d = new Date(m.timestamp);
+      return d.toISOString().slice(0,10) === todayISO;
+    }).reverse(); // cronológico
+
+    if(!todayMsgs.length){
+      el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px;">Sin mensajes hoy en este canal</div>`;
+      return;
+    }
+
+    const ch = CHANNELS.find(c=>c.id===channelId);
+    el.innerHTML = `<div style="font-size:11px;font-weight:500;color:var(--accent);margin-bottom:10px;">📡 ${ch?.unidad||''} · ${ch?.chofer||''} · ${todayMsgs.length} mensajes hoy</div>` +
+      todayMsgs.map(m => {
+        const hora = new Date(m.timestamp).toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
+        const author = m.author?.global_name || m.author?.username || '';
+        const imgs = (m.attachments||[]).filter(a=>a.content_type?.startsWith('image')||a.filename?.match(/\.(jpg|jpeg|png|webp|gif)$/i));
+        return `<div class="discord-msg">
+          <div class="discord-msg-header">
+            <span class="discord-msg-author">${author}</span>
+            <span class="discord-msg-time">${hora}</span>
+          </div>
+          ${m.content?`<div class="discord-msg-content">${escHtml(m.content)}</div>`:''}
+          ${imgs.length?`<div class="discord-imgs">${imgs.map(img=>`<img class="discord-img" src="${img.url}" onclick="window.open('${img.url}','_blank')" loading="lazy"/>`).join('')}</div>`:''}
+        </div>`;
+      }).join('');
+  } catch(e){
+    el.innerHTML=`<div style="padding:16px;color:var(--red);font-size:12px;">Error de conexión con Discord.</div>`;
+  }
+}
+
+function escHtml(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── JORNADA / UNIDADES ─────────────────────────────────────
+function setUF(turno,code,field,val){
+  const key = turno==='m'?'unidades_m':'unidades_t';
+  if(!S[key][code]) S[key][code]={gasoil:'1/2',status:'Revisado',novedad:''};
+  S[key][code][field]=val; save(); renderUnidades();
+}
+
+function handleFoto(turno,unidad,input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const key=turno==='m'?'fotos_m':'fotos_t';
+    if(!S[key][unidad]) S[key][unidad]=[];
+    S[key][unidad].push(e.target.result);
+    save(); renderUnidades();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderUnidadesTurno(turno){
+  const key=turno==='m'?'unidades_m':'unidades_t';
+  const fkey=turno==='m'?'fotos_m':'fotos_t';
+  return UNIDADES.map(u=>{
+    const d=S[key][u]||{gasoil:'1/2',status:'Revisado',novedad:''};
+    const fotos=S[fkey][u]||[];
+    return `<div style="padding:8px 0;border-bottom:0.5px solid var(--border2);">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="vcode">${u}</span>
+        <select class="sel" onchange="setUF('${turno}','${u}','gasoil',this.value)">
+          ${GASOIL_OPTS.map(g=>`<option value="${g}" ${d.gasoil===g?'selected':''}>${g}</option>`).join('')}
+        </select>
+        <select class="sel" onchange="setUF('${turno}','${u}','status',this.value)">
+          <option value="Revisado" ${d.status==='Revisado'?'selected':''}>Revisado ✅</option>
+          <option value="Novedad"  ${d.status==='Novedad'?'selected':''}>Novedad ⚠️</option>
+          <option value="Pendiente"${d.status==='Pendiente'?'selected':''}>Pendiente</option>
+        </select>
+      </div>
+      ${d.status==='Novedad'?`
+        <div class="novedad-block">
+          <input class="inp" type="text" value="${d.novedad||''}" placeholder="Describe la novedad..." onchange="setUF('${turno}','${u}','novedad',this.value)" style="margin-bottom:6px;"/>
+          <label class="foto-btn">📷 Adjuntar foto <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="handleFoto('${turno}','${u}',this)"/></label>
+          <div style="display:flex;flex-wrap:wrap;">${fotos.map(f=>`<img src="${f}" class="foto-preview"/>`).join('')}</div>
+        </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function renderUnidades(){
+  document.getElementById('unidades-manana').innerHTML=renderUnidadesTurno('m');
+  document.getElementById('unidades-tarde').innerHTML=renderUnidadesTurno('t');
+  const sinNov=UNIDADES.filter(u=>(S.unidades_m[u]||{}).status!=='Novedad'&&(S.unidades_t[u]||{}).status!=='Novedad').length;
+  document.getElementById('kpi-u').textContent=`${sinNov}/5`;
+}
+
+// ── FIN DE SEMANA ──────────────────────────────────────────
+function addGuardiaSlot(){ S.guardia.push({rol:'Chofer',nombre:'',retiro:''}); save(); renderGuardia(); renderGuardiaBanner(); renderFsLibres(); renderFsRetiro(); }
+function removeGuardiaSlot(i){ S.guardia.splice(i,1); save(); renderGuardia(); renderGuardiaBanner(); renderFsLibres(); renderFsRetiro(); }
+function setGF(i,field,val){ S.guardia[i][field]=val; save(); renderGuardiaBanner(); renderFsLibres(); renderFsRetiro(); }
+
+function renderGuardia(){
+  const allNames=TODO_PERSONAL.map(p=>p.nombre);
+  document.getElementById('guardia-slots').innerHTML=S.guardia.map((g,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:0.5px solid var(--border2);">
+      <select class="sel" style="width:82px;" onchange="setGF(${i},'rol',this.value)">
+        <option value="Chofer"   ${g.rol==='Chofer'?'selected':''}>Chofer</option>
+        <option value="Ayudante"${g.rol==='Ayudante'?'selected':''}>Ayudante</option>
+      </select>
+      <select class="sel" style="flex:1;" onchange="setGF(${i},'nombre',this.value)">
+        <option value="">Seleccionar...</option>
+        ${allNames.map(n=>`<option value="${n}" ${g.nombre===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+      <button class="remove-btn" onclick="removeGuardiaSlot(${i})">✕</button>
+    </div>`).join('')||`<div style="color:var(--text-muted);font-size:11px;padding:8px 0;">Toca "+ Agregar" para añadir personal</div>`;
+}
+
+function renderGuardiaBanner(){
+  const activos=S.guardia.filter(g=>g.nombre);
+  const wrap=document.getElementById('guardia-banner-wrap');
+  if(!activos.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=`<div class="guardia-banner">
+    <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;">🟢 Guardia activa</div>
+    ${activos.map(g=>{
+      const p=TODO_PERSONAL.find(x=>x.nombre===g.nombre);
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div class="avatar" style="background:${p?.color||'#2dd4bf'}22;color:${p?.color||'#2dd4bf'};width:28px;height:28px;font-size:11px;">${g.nombre.charAt(0)}</div>
+        <div><div style="font-size:12px;font-weight:500;color:var(--text);">${g.nombre}</div><div style="font-size:10px;color:var(--text-muted);">${g.rol}${CHOFERES.find(c=>c.nombre===g.nombre)?(' · '+CHOFERES.find(c=>c.nombre===g.nombre).unidad):''}</div></div>
+        <span class="badge bg" style="margin-left:auto;">En guardia</span>
+      </div>`;
+    }).join('')}
+    <div style="font-size:10px;color:var(--text-muted);margin-top:4px;">Inicio: ${document.getElementById('fs-inicio')?.value||'—'}</div>
+  </div>`;
+}
+
+function renderFsSelects(){
+  renderGuardia();
+}
+
+function renderFsLibres(){
+  const enGuardia=S.guardia.map(g=>g.nombre).filter(Boolean);
+  const libres=TODO_PERSONAL.filter(p=>!enGuardia.includes(p.nombre));
+  document.getElementById('fs-libres').innerHTML=libres.length
+    ?libres.map(p=>`<div class="row"><div class="avatar" style="background:${p.color}22;color:${p.color};">${p.nombre.charAt(0)}</div><div style="flex:1;"><div class="pname">${p.nombre}</div></div><span class="badge bgr">Libre</span></div>`).join('')
+    :`<div style="color:var(--text-muted);font-size:11px;padding:8px;">Todo el personal está en guardia</div>`;
+}
+
+function renderFsRetiro(){
+  const en=S.guardia.filter(g=>g.nombre);
+  document.getElementById('fs-retiro').innerHTML=en.length
+    ?en.map((g,i)=>`<div class="row"><span style="flex:1;font-size:12px;font-weight:500;color:var(--text);">${g.nombre}</span><input class="hora" type="time" value="${g.retiro||''}" onchange="setGF(${i},'retiro',this.value)"/><span class="badge ${g.retiro?'bg':'bgr'}" style="margin-left:6px;">${g.retiro?'Retirado':'Pendiente'}</span></div>`).join('')
+    :`<div style="color:var(--text-muted);font-size:11px;padding:8px;">Agrega personal de guardia primero</div>`;
+}
+
+// ── TRIPS ──────────────────────────────────────────────────
+async function loadTrips(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/trips?start_date=eq.${hoy()}&select=*`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
+    const d=await r.json();
+    if(Array.isArray(d)){
+      S.trips=d; save();
+      document.getElementById('kpi-v').textContent=d.length||'—';
+      document.getElementById('kpi-e').textContent=d.filter(t=>(t.tipoViaje||'Entrega')==='Entrega').length||'—';
+      document.getElementById('kpi-t').textContent=d.filter(t=>t.tipoViaje==='Traslado').length||'—';
+    }
+  }catch(e){}
+}
+
+// ── TAREAS ─────────────────────────────────────────────────
+async function loadTareas(){
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/coordinator_tasks?assignee=eq.jackson&order=created_at.desc&limit=30`,{headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
+    if(r.ok){const d=await r.json(); if(Array.isArray(d)){S.tareas=d; renderTareas(); updateTareasBadge();}}
+    else renderTareasEmpty();
+  }catch(e){renderTareasEmpty();}
+}
+
+function renderTareasEmpty(){ document.getElementById('tareas-list').innerHTML=`<div style="text-align:center;padding:32px;color:var(--text-muted);font-size:13px;">Sin tareas pendientes ✓</div>`; }
+
+function updateTareasBadge(){
+  const pending=S.tareas.filter(t=>t.status!=='completada').length;
+  const nav=document.getElementById('nav-tareas');
+  const dot=nav.querySelector('.notif-dot');
+  if(pending>0){ if(!dot){const d=document.createElement('span');d.className='notif-dot';nav.appendChild(d);} nav.querySelector('.nav-lbl').textContent=`Tareas(${pending})`; }
+  else{ if(dot)dot.remove(); nav.querySelector('.nav-lbl').textContent='Tareas'; }
+}
+
+function renderTareas(){
+  const el=document.getElementById('tareas-list');
+  if(!S.tareas.length){renderTareasEmpty();return;}
+  el.innerHTML=S.tareas.map(t=>`
+    <div class="task-card ${t.priority||'pendiente'}">
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;">${t.title||t.description||'Tarea'}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px;font-family:'JetBrains Mono',monospace;">${t.created_by||'José Marín'} · ${t.created_at?new Date(t.created_at).toLocaleString('es-VE',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'}):''}</div>
+      ${t.status!=='completada'?`<div style="display:flex;gap:6px;"><button class="btn-sm-g" onclick="completarTarea('${t.id}')">✓ Completada</button><button class="btn-sm-b" onclick="responderTarea('${t.id}','${(t.title||'').replace(/'/g,"\\'")}')">Responder</button></div>`:`<span class="badge bg">Completada ✓</span>`}
+      ${t.response?`<div style="margin-top:6px;font-size:11px;color:var(--text-muted);border-top:0.5px solid var(--border2);padding-top:6px;">💬 ${t.response}</div>`:''}
+    </div>`).join('');
+}
+
+async function completarTarea(id){
+  try{ await fetch(`${SB_URL}/rest/v1/coordinator_tasks?id=eq.${id}`,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({status:'completada'})}); showToast('Completada ✓'); loadTareas(); }
+  catch(e){ showToast('Error'); }
+}
+
+function responderTarea(id,title){
+  const resp=prompt(`Responder: "${title}"\n\nEscribe tu respuesta:`);
+  if(!resp)return;
+  fetch(`${SB_URL}/rest/v1/coordinator_tasks?id=eq.${id}`,{method:'PATCH',headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({response:resp,status:'respondida'})}).then(()=>{showToast('Respuesta enviada ✓');loadTareas();});
+}
+
+// ── REPORTE ────────────────────────────────────────────────
+async function generarReporte(){
+  const now=new Date();
+  const nota=document.getElementById('nota-coord').value;
+  const unidadesM=UNIDADES.map(u=>{ const d=S.unidades_m[u]||{gasoil:'—',status:'—',novedad:''}; return `• ${u} AM: ${d.gasoil} gasoil · ${d.status}${d.novedad?' · '+d.novedad:''}`; }).join('\n');
+  const unidadesT=UNIDADES.map(u=>{ const d=S.unidades_t[u]||{gasoil:'—',status:'—',novedad:''}; return `• ${u} PM: ${d.gasoil} gasoil · ${d.status}${d.novedad?' · '+d.novedad:''}`; }).join('\n');
+  const personalTxt=TODO_PERSONAL.map(p=>{ const d=ps(p.id); if(d.vacaciones)return `• ${p.nombre} — Vacaciones`; const extra=d.salida&&parseInt(d.salida.split(':')[0])>=17; return `• ${p.nombre} — E:${d.entrada||'—'} S:${d.salida||'—'}${extra?' ⚡':''}`; }).join('\n');
+  const tripsTxt=S.trips.length?`${S.trips.length} viajes registrados en la app`:'Sin viajes registrados en la app (choferes en Discord)';
+  const msg=`📊 **REPORTE DIARIO — ${now.toLocaleDateString('es-VE')}**\n🚛 Coordinador: Jackson Hernández · ${now.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'})}\n\n**PERSONAL**\n${personalTxt}\n\n**UNIDADES AM (salida)**\n${unidadesM}\n\n**UNIDADES PM (guardado)**\n${unidadesT}\n\n**ACTIVIDAD**\n${tripsTxt}\n\n**NOTA**\n${nota||'Sin observaciones.'}\n\n_Transporte Emporium_`;
+
+  // Enviar a Discord
+  if(DISCORD_WEBHOOK){ try{ await fetch(DISCORD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:msg})}); }catch(e){} }
+
+  // Generar PDF
+  const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const fechaLarga=`${dias[now.getDay()]} ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
+
+  const novedadesM = UNIDADES.filter(u=>(S.unidades_m[u]||{}).status==='Novedad').map(u=>`<tr><td>${u}</td><td>AM</td><td>${S.unidades_m[u].novedad||'—'}</td></tr>`).join('');
+  const novedadesT = UNIDADES.filter(u=>(S.unidades_t[u]||{}).status==='Novedad').map(u=>`<tr><td>${u}</td><td>PM</td><td>${S.unidades_t[u].novedad||'—'}</td></tr>`).join('');
+
+  const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <style>
+    body{font-family:Arial,sans-serif;font-size:12px;color:#1e293b;margin:0;padding:20px;}
+    .header{background:#0f1f35;color:white;padding:16px 20px;border-radius:8px;margin-bottom:20px;}
+    .header h1{font-size:16px;margin:0 0 4px;}
+    .header p{font-size:11px;margin:0;opacity:.8;}
+    .section{margin-bottom:16px;}
+    .section-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin-bottom:10px;}
+    table{width:100%;border-collapse:collapse;font-size:11px;}
+    th{background:#f1f5f9;padding:7px 10px;text-align:left;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;}
+    td{padding:7px 10px;border-bottom:1px solid #f1f5f9;}
+    .badge-ok{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;}
+    .badge-nov{background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;}
+    .badge-vac{background:#f3e8ff;color:#7e22ce;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;}
+    .badge-ext{background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-size:9px;}
+    .nota-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;font-size:12px;line-height:1.6;}
+    .firma{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:12px;display:flex;justify-content:space-between;align-items:flex-end;}
+    .firma-block{text-align:center;}
+    .firma-line{border-top:1px solid #1e293b;width:160px;margin:0 auto 4px;}
+    .firma-name{font-size:11px;font-weight:600;}
+    .firma-role{font-size:10px;color:#64748b;}
+    @media print{body{padding:10px;} .no-print{display:none;}}
+  </style></head><body>
+  <div class="header">
+    <h1>Reporte Diario de Flota — Transporte Emporium</h1>
+    <p>${fechaLarga} · Coordinador: Jackson Hernández · Generado ${now.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'})}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Personal</div>
+    <table><thead><tr><th>Nombre</th><th>Rol</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead><tbody>
+    ${TODO_PERSONAL.map(p=>{ const d=ps(p.id); const extra=d.salida&&parseInt(d.salida.split(':')[0])>=17; const rol=CHOFERES.find(c=>c.id===p.id)?'Chofer':'Ayudante'; let badge=d.vacaciones?`<span class="badge-vac">Vacaciones</span>`:extra?`<span class="badge-ext">⚡ Horas extras</span>`:'—'; return `<tr><td>${p.nombre}${p.unidad?` <small style="color:#64748b;">(${p.unidad})</small>`:''}</td><td>${rol}</td><td>${d.entrada||'—'}</td><td>${d.salida||'—'}</td><td>${badge}</td></tr>`; }).join('')}
+    </tbody></table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Estado de Unidades</div>
+    <table><thead><tr><th>Unidad</th><th>Chofer</th><th>Gasoil AM</th><th>Estado AM</th><th>Gasoil PM</th><th>Estado PM</th></tr></thead><tbody>
+    ${UNIDADES.map(u=>{ const m=S.unidades_m[u]||{gasoil:'—',status:'—'}; const t=S.unidades_t[u]||{gasoil:'—',status:'—'}; const ch=CHOFERES.find(c=>c.unidad===u); const badgeM=m.status==='Revisado'?`<span class="badge-ok">Revisado</span>`:m.status==='Novedad'?`<span class="badge-nov">Novedad</span>`:m.status; const badgeT=t.status==='Revisado'?`<span class="badge-ok">Revisado</span>`:t.status==='Novedad'?`<span class="badge-nov">Novedad</span>`:t.status; return `<tr><td><b>${u}</b></td><td>${ch?.nombre||'—'}</td><td>${m.gasoil}</td><td>${badgeM}</td><td>${t.gasoil}</td><td>${badgeT}</td></tr>`; }).join('')}
+    </tbody></table>
+  </div>
+
+  ${(novedadesM||novedadesT)?`<div class="section">
+    <div class="section-title">Novedades Reportadas</div>
+    <table><thead><tr><th>Unidad</th><th>Turno</th><th>Descripción</th></tr></thead><tbody>
+    ${novedadesM}${novedadesT}
+    </tbody></table>
+  </div>`:''}
+
+  <div class="section">
+    <div class="section-title">Nota del Coordinador</div>
+    <div class="nota-box">${nota||'Sin observaciones adicionales.'}</div>
+  </div>
+
+  <div class="firma">
+    <div class="firma-block">
+      <div class="firma-line"></div>
+      <div class="firma-name">Jackson Hernández</div>
+      <div class="firma-role">Coordinador de Transporte</div>
+    </div>
+    <div style="font-size:10px;color:#94a3b8;text-align:right;">Transporte Emporium<br>${fechaLarga}</div>
+  </div>
+
+  <script>window.onload=function(){window.print();}<\/script>
+  </body></html>`;
+
+  const blob = new Blob([pdfHtml], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  window.open(url,'_blank');
+  showToast('Reporte generado ✓');
+}
+
+async function enviarGuardia(){
+  const activos=S.guardia.filter(g=>g.nombre);
+  if(!activos.length){showToast('Agrega personal de guardia');return;}
+  const now=new Date();
+  const msg=`📅 **REPORTE GUARDIA — ${now.toLocaleDateString('es-VE')}**\n🚛 Jackson Hernández\n\n**Guardia:**\n${activos.map(g=>`• ${g.rol}: ${g.nombre}${CHOFERES.find(c=>c.nombre===g.nombre)?' ('+CHOFERES.find(c=>c.nombre===g.nombre).unidad+')':''}`).join('\n')}\nInicio: ${document.getElementById('fs-inicio').value||'—'}\n\n**Se hizo:**\n${document.getElementById('fs-hecho').value||'—'}\n\n**Faltó:**\n${document.getElementById('fs-falto').value||'—'}\n\n**Retiro:**\n${activos.map(g=>`• ${g.nombre}: ${g.retiro||'Pendiente'}`).join('\n')}\n\n_Transporte Emporium_`;
+  if(DISCORD_WEBHOOK){ try{ await fetch(DISCORD_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:msg})}); }catch(e){} }
+  window.open(`https://wa.me/${JOSE_PHONE.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+  showToast('Reporte de guardia enviado ✓');
+}
+
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+checkAuth();
+</script>
+</body>
+</html>
