@@ -406,12 +406,27 @@ async function loadDiscord(channelId, tabEl){
         const hora = new Date(m.timestamp).toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
         const author = m.author?.global_name || m.author?.username || '';
         const imgs = (m.attachments||[]).filter(a=>a.content_type?.startsWith('image')||a.filename?.match(/\.(jpg|jpeg|png|webp|gif)$/i));
+        // Renderizar embeds (mensajes del bot)
+        const embedsHtml = (m.embeds||[]).map(e=>{
+          const color = e.color ? `#${e.color.toString(16).padStart(6,'0')}` : 'var(--accent)';
+          const fields = (e.fields||[]).map(f=>`<div style="margin-top:5px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);">${escHtml(f.name)}</div><div style="font-size:12px;color:var(--text);">${escHtml(f.value)}</div></div>`).join('');
+          const img = e.image?.url ? `<img src="${e.image.url}" style="width:100%;border-radius:6px;margin-top:6px;" onclick="window.open('${e.image.url}','_blank')" loading="lazy"/>` : '';
+          const thumb = e.thumbnail?.url ? `<img src="${e.thumbnail.url}" style="width:48px;height:48px;border-radius:6px;float:right;margin-left:8px;" loading="lazy"/>` : '';
+          return `<div style="border-left:3px solid ${color};background:var(--card2);border-radius:0 6px 6px 0;padding:8px 10px;margin-top:4px;">
+            ${thumb}
+            ${e.title?`<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">${escHtml(e.title)}</div>`:''}
+            ${e.description?`<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${escHtml(e.description)}</div>`:''}
+            ${fields}
+            ${img}
+          </div>`;
+        }).join('');
         return `<div class="discord-msg">
           <div class="discord-msg-header">
             <span class="discord-msg-author">${author}</span>
             <span class="discord-msg-time">${hora}</span>
           </div>
           ${m.content?`<div class="discord-msg-content">${escHtml(m.content)}</div>`:''}
+          ${embedsHtml}
           ${imgs.length?`<div class="discord-imgs">${imgs.map(img=>`<img class="discord-img" src="${img.url}" onclick="window.open('${img.url}','_blank')" loading="lazy"/>`).join('')}</div>`:''}
         </div>`;
       }).join('');
