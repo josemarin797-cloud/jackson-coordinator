@@ -383,9 +383,8 @@ async function loadDiscord(channelId, tabEl){
 
   try {
     // Obtener hasta 100 mensajes
-    const res = await fetch(`https://discord.com/api/v9/channels/${channelId}/messages?limit=100`, {
-      headers: { 'Authorization': DISCORD_TOKEN }
-    });
+    const PROXY_URL = 'https://discord-proxy-emporium.josemarin797.workers.dev';
+    const res = await fetch(`${PROXY_URL}?channel=${channelId}&token=${encodeURIComponent(DISCORD_TOKEN)}&limit=100`);
     if(!res.ok){ el.innerHTML=`<div style="padding:16px;color:var(--red);font-size:12px;">Error al leer Discord (${res.status}). Puede que el token haya expirado.</div>`; return; }
     const msgs = await res.json();
 
